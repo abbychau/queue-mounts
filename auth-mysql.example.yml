@@ -1,0 +1,31 @@
+auth-mode: 1  # 0 Anonymous, 1 Username, 2 ClientID
+acl-mode: 1  # 0 Anonymous, 1 Username, 2 ClientID
+
+dsn:
+  host: 135.121.141.110
+  port: 3306
+  schema: mqtt-auth
+  charset: utf8mb4_0900_ai_ci
+  login-name: mqtt-auth
+  login-password: 1234
+  max-open-conns: 10
+  max-idle-conns: 5
+
+auth:
+  table: auth
+  user-column: username
+  password-column: password
+  allow-column: allow
+  password-hash: 0 # 0 no encrypt, 1 bcrypt(cost=10), 2 md5, 3 sha1, 4 sha256, 5 sha512, 6 hmac-sha1, 7 hmac-sha256, 8 hmac-sha512
+  hash-key:  #The key is required for the HMAC algorithm
+  way: 1 # 1: username, 2: clientid
+  datasource: 2 # 2: mysql
+
+acl:
+  table: acl
+  user-column: username # or client_id, set this parameter based on the actual field name
+  topic-column: topic
+  access-column: access  # 0 Deny、1 publish (Write)、2 subscribe (Read)、3 pubsub (ReadWrite)
+
+mqtt:
+  tcp: :1883
