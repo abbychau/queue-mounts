@@ -1,7 +1,3 @@
-// SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: 2022 wind
-// SPDX-FileContributor: wind (573966@qq.com)
-
 package main
 
 import (
@@ -11,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime/debug"
 	"syscall"
 	"time"
 
@@ -60,37 +57,41 @@ func realMain(ctx context.Context) error {
 	flag.StringVar(&cfg.Mqtt.HTTP, "http", ":8080", "network address for web info dashboard listener")
 	flag.BoolVar(&cfg.Log.Enable, "log-enable", true, "log enabled or not")
 	flag.StringVar(&cfg.Log.Filename, "log-file", "./logs/comqtt.log", "log filename")
-	//parse arguments
+
+	// Parse arguments
 	flag.Parse()
-	//load config file
+
+	// Load config file
 	fmt.Printf("confFile:%s\n", confFile)
 	if len(confFile) > 0 {
 		if cfg, err = config.Load(confFile); err != nil {
 			onError(err, "")
 		}
 		println("load config file success")
+		cfg.Auth.ConfPath = confFile
 	}
 
-	//enable pprof
+	// Enable pprof
 	if cfg.PprofEnable {
 		pprof()
 	}
 
-	//init log
+	// Init log
 	log.Init(&cfg.Log)
 	if cfg.Log.Enable && cfg.Log.Output == log.OutputFile {
 		fmt.Println("log output to the files, please check")
 	}
 
-	// create server instance and init hooks
+	// Create server instance and init hooks
 	cfg.Mqtt.Options.Logger = log.Default()
 	server := mqtt.New(&cfg.Mqtt.Options)
+
 	log.Info("comqtt server initializing...")
 	initStorage(server, cfg)
 	initAuth(server, cfg)
 	initBridge(server, cfg)
 
-	// gen tls config
+	// Gen TLS config
 	var listenerConfig *listeners.Config
 	if tlsConfig, err := config.GenTlsConfig(cfg); err != nil {
 		onError(err, "")
@@ -100,17 +101,17 @@ func realMain(ctx context.Context) error {
 		}
 	}
 
-	// add tcp listener
 	tcp := listeners.NewTCP("tcp", cfg.Mqtt.TCP, listenerConfig)
 	onError(server.AddListener(tcp), "add tcp listener")
 
-	// add websocket listener
 	ws := listeners.NewWebsocket("ws", cfg.Mqtt.WS, listenerConfig)
 	onError(server.AddListener(ws), "add websocket listener")
 
-	// add http listener
 	http := listeners.NewHTTPStats("stats", cfg.Mqtt.HTTP, nil, server.Info)
 	onError(server.AddListener(http), "add http listener")
+
+	server.AddHook(new(auth.AllowHook), nil)
+	server.AddHook(new(HttpWebHook), nil)
 
 	errCh := make(chan error, 1)
 	// start server
@@ -120,8 +121,6 @@ func realMain(ctx context.Context) error {
 			errCh <- err
 		}
 	}()
-
-	//log.Info("comqtt server started")
 
 	select {
 	case err := <-errCh:
@@ -136,10 +135,8 @@ func realMain(ctx context.Context) error {
 
 func initAuth(server *mqtt.Server, conf *config.Config) {
 	logMsg := "init auth"
-	fmt.Printf("auth way:%d\n", conf.Auth.Datasource)
 	if conf.Auth.Way == config.AuthModeAnonymous {
 		server.AddHook(new(auth.AllowHook), nil)
-		fmt.Println("auth anonymous")
 	} else if conf.Auth.Way == config.AuthModeUsername || conf.Auth.Way == config.AuthModeClientid {
 		switch conf.Auth.Datasource {
 		case config.AuthDSRedis:
@@ -147,11 +144,12 @@ func initAuth(server *mqtt.Server, conf *config.Config) {
 			onError(plugin.LoadYaml(conf.Auth.ConfPath, &opts), logMsg)
 			onError(server.AddHook(new(rauth.Auth), &opts), logMsg)
 		case config.AuthDSMysql:
-			fmt.Println("auth mysql")
 			opts := mauth.Options{}
-			fmt.Println("loading yaml")
-			onError(plugin.LoadYaml(conf.Auth.ConfPath, &opts), logMsg)
-			fmt.Println("add hook")
+			err := plugin.LoadYaml(conf.Auth.ConfPath, &opts)
+			if err != nil {
+				fmt.Println("Load yaml error")
+				fmt.Println(err)
+			}
 			onError(server.AddHook(new(mauth.Auth), &opts), logMsg)
 		case config.AuthDSPostgresql:
 			opts := pauth.Options{}
@@ -207,7 +205,10 @@ func initBridge(server *mqtt.Server, conf *config.Config) {
 // onError handle errors and simplify code
 func onError(err error, msg string) {
 	if err != nil {
-		log.Error(msg, "error", err)
+		//print call stack
+		debug.PrintStack()
+
+		fmt.Println("OE:"+msg, err)
 		os.Exit(1)
 	}
 }
