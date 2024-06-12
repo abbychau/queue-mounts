@@ -11,6 +11,8 @@ import (
 	"syscall"
 	"time"
 
+	hooks "queuemounts/hooks"
+
 	rv8 "github.com/go-redis/redis/v8"
 	"github.com/wind-c/comqtt/v2/cluster/log"
 	"github.com/wind-c/comqtt/v2/config"
@@ -111,7 +113,16 @@ func realMain(ctx context.Context) error {
 	onError(server.AddListener(http), "add http listener")
 
 	server.AddHook(new(auth.AllowHook), nil)
-	server.AddHook(new(HttpWebHook), nil)
+	server.AddHook(new(hooks.HttpWebHook), nil)
+	server.AddHook(new(hooks.MyBadgerDbHook), &badger.Options{
+		Path: "./badger2.db", //TODO: change to config
+	})
+	go func() {
+		for {
+			hooks.RenewCache()
+			time.Sleep(10 * time.Second)
+		}
+	}()
 
 	errCh := make(chan error, 1)
 	// start server

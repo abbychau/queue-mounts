@@ -60,7 +60,7 @@ $acls = dbRows("SELECT * FROM acl");
 ?>
 
 <?php include('templates/header.php'); ?>
-<h1>MQTT Auth</h1>
+
 <h2>Users</h2>
 <table class="table">
     <thead>
@@ -104,6 +104,7 @@ $acls = dbRows("SELECT * FROM acl");
     </div>
     <button type="submit" class="btn btn-primary">Add User</button>
 </form>
+<hr />
 <h2>ACLs</h2>
 <table class="table">
     <thead>
