@@ -28,8 +28,8 @@ include("templates/header.php");
     <thead>
         <tr>
             <th>Trigger Topic</th>
-            <th>Trigger EUI</th>
-            <th>EUI Field</th>
+            <!-- <th>Trigger EUI</th>
+            <th>EUI Field</th> -->
             <th>URL</th>
             <th>Created By</th>
             <th>Actions</th>
@@ -39,8 +39,8 @@ include("templates/header.php");
         <?php foreach ($webhooks as $webhook) { ?>
             <tr>
                 <td><?php echo $webhook['trigger_topic']; ?></td>
-                <td><?php echo $webhook['trigger_eui']; ?></td>
-                <td><?php echo $webhook['eui_field']; ?></td>
+                <!-- <td><?php echo $webhook['trigger_eui']; ?></td>
+                <td><?php echo $webhook['eui_field']; ?></td> -->
                 <td><?php echo $webhook['url']; ?></td>
                 <td><?php echo $webhook['created_by']; ?></td>
                 <td>
@@ -59,19 +59,19 @@ include("templates/header.php");
     <input type="hidden" name="action" value="add_webhook">
     <div class="form-group">
         <label for="trigger_topic">Trigger Topic</label>
-        <input type="text" class="form-control" id="trigger_topic" name="trigger_topic">
+        <input type="text" class="form-control" id="trigger_topic" name="trigger_topic" required>
     </div>
-    <div class="form-group">
+    <!-- <div class="form-group">
         <label for="trigger_eui">Trigger EUI</label>
         <input type="text" class="form-control" id="trigger_eui" name="trigger_eui">
     </div>
     <div class="form-group">
         <label for="eui_field">EUI Field</label>
         <input type="text" class="form-control" id="eui_field" name="eui_field">
-    </div>
+    </div> -->
     <div class="form-group">
         <label for="url">URL</label>
-        <input type="text" class="form-control" id="url" name="url">
+        <input type="text" class="form-control" id="url" name="url" required>
     </div>
     <button type="submit" class="btn btn-primary">Add Webhook</button>
 </form>
