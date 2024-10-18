@@ -3,12 +3,10 @@ include("db.php");
 if (isset($_POST['action'])) {
     if ($_POST['action'] == 'add_webhook') {
         $trigger_topic = $_POST['trigger_topic'];
-        $trigger_eui = $_POST['trigger_eui'];
-        $eui_field = $_POST['eui_field'];
         $url = $_POST['url'];
         $created_by = 'abby';
-        $sql = "INSERT INTO webhooks (trigger_topic, trigger_eui, eui_field, url, created_by) VALUES (:trigger_topic, :trigger_eui, :eui_field, :url, :created_by)";
-        dbExec($sql, [':trigger_topic' => $trigger_topic, ':trigger_eui' => $trigger_eui, ':url' => $url, ':created_by' => $created_by]);
+        $sql = "INSERT INTO webhooks (trigger_topic, url, created_by) VALUES (:trigger_topic, :url, :created_by)";
+        dbExec($sql, [':trigger_topic' => $trigger_topic, ':url' => $url, ':created_by' => $created_by]);
     } else if ($_POST['action'] == 'delete_webhook') {
         $id = $_POST['id'];
         $sql = "DELETE FROM webhooks WHERE id = :id";
@@ -28,8 +26,6 @@ include("templates/header.php");
     <thead>
         <tr>
             <th>Trigger Topic</th>
-            <!-- <th>Trigger EUI</th>
-            <th>EUI Field</th> -->
             <th>URL</th>
             <th>Created By</th>
             <th>Actions</th>
@@ -39,8 +35,6 @@ include("templates/header.php");
         <?php foreach ($webhooks as $webhook) { ?>
             <tr>
                 <td><?php echo $webhook['trigger_topic']; ?></td>
-                <!-- <td><?php echo $webhook['trigger_eui']; ?></td>
-                <td><?php echo $webhook['eui_field']; ?></td> -->
                 <td><?php echo $webhook['url']; ?></td>
                 <td><?php echo $webhook['created_by']; ?></td>
                 <td>
@@ -61,14 +55,6 @@ include("templates/header.php");
         <label for="trigger_topic">Trigger Topic</label>
         <input type="text" class="form-control" id="trigger_topic" name="trigger_topic" required>
     </div>
-    <!-- <div class="form-group">
-        <label for="trigger_eui">Trigger EUI</label>
-        <input type="text" class="form-control" id="trigger_eui" name="trigger_eui">
-    </div>
-    <div class="form-group">
-        <label for="eui_field">EUI Field</label>
-        <input type="text" class="form-control" id="eui_field" name="eui_field">
-    </div> -->
     <div class="form-group">
         <label for="url">URL</label>
         <input type="text" class="form-control" id="url" name="url" required>

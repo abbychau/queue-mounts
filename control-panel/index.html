@@ -5,6 +5,7 @@
     <title>Control Panel</title>
     <!--jquery3full-->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link icon="logo" rel="icon" href="favicon.png" />
     <style>
         a {
             cursor: pointer;
@@ -20,7 +21,7 @@
             z-index: 1;
             top: 0;
             left: 0;
-            background-color: #111;
+            background-color: #0a0619;
             overflow-x: hidden;
             padding-top: 20px;
         }
@@ -57,10 +58,19 @@
 
         $(document).ready(function () {
             $(".sidenav a").click(function () {
-                $("#welcome").hide();
+                if($(this).hasClass("active")) return;
+                var nav = $(this).attr("data-nav");
                 $(".sidenav a").removeClass("active");
                 $(this).addClass("active");
-                var nav = $(this).attr("data-nav");
+                if(nav == "home"){
+                    $("#welcome").show();
+                    $("#mainFrame").attr("src", "about:blank");
+                    return;
+                }
+
+                $("#welcome").hide();
+                
+                
                 $("#mainFrame").attr("src", nav + ".php");
             });
         });
@@ -71,7 +81,8 @@
     <!-- side nav bar -->
     <div class="sidenav">
         <img src="logo.png" style="width:80%;margin:auto;display:block" />
-        <a data-nav="home">Home</a>
+        <a class="active" data-nav="home">Home</a>
+        <a data-nav="dashboard">Dashboard</a>
         <a data-nav="auth">Auth/ACL</a>
         <a data-nav="webhooks">Webhooks</a>
         <a data-nav="about">About</a>
@@ -92,7 +103,7 @@
             justify-content: center;
             align-items: center;
             background-color: #0a0619;">
-                <img src="logo.png" style="width:300px;margin:auto;display:block" />
+                <img src="logo.png" style="width:300px;margin:auto;display:block;max-width: 100%;  border-radius: 15px; display:block" />
             </div>
         </div>
         <iframe src="about:blank" id="mainFrame" frameborder="0"></iframe>

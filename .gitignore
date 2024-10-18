@@ -1,2 +1,3 @@
 auth-mysql.yml
 bolt.db
+websocket-pubsub/node_modules

@@ -1,4 +1,6 @@
 <?php
+//show errors
+ini_set('display_errors', 1);
 $confFile = __DIR__ . '/../auth-mysql.yml';
 $content = file_get_contents($confFile);
 $lines = explode("\n", $content);
