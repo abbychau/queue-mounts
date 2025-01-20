@@ -2,6 +2,8 @@
 
 A feature-rich MQTT broker implementation with persistent storage, authentication, and web dashboard.
 
+![screenshot](screenshot.png)
+
 ## Features
 
 - MySQL-based authentication and ACL (Access Control List)
