@@ -104,7 +104,10 @@ func httpPost(url string, data []byte) {
 
 	_, err := client.Post(url, "application/json", bytes.NewBuffer(data))
 	if err != nil {
+		fmt.Println("httpPost failed,", err)
 		return
+	} else {
+		fmt.Println("httpPost success")
 	}
 
 }

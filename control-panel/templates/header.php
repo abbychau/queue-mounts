@@ -1,3 +1,14 @@
+<?php
+// Start session and require admin login for all pages that include this header
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+    $redirect = isset($_SERVER['REQUEST_URI']) ? urlencode($_SERVER['REQUEST_URI']) : '';
+    header('Location: login.php' . ($redirect ? ('?redirect=' . $redirect) : ''));
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
     <head>

@@ -1,0 +1,75 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+    header('Location: login.php?redirect=' . urlencode('/'));
+    exit;
+}
+?>
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Control Panel</title>
+    <!--jquery3full-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link icon="logo" rel="icon" href="favicon.png" />
+    <style>
+        a { cursor: pointer; }
+        body { margin: 0; font-family: "Lato", sans-serif; }
+        .sidenav { height: 100%; width: 200px; position: fixed; z-index: 1; top: 0; left: 0; background-color: #0a0619; overflow-x: hidden; padding-top: 20px; font-family:Arial, Helvetica, sans-serif;}
+        .main { height: calc(100% - 20px); width: calc(100% - 220px); position: fixed; z-index: 1; top: 10px; left: 210px; }
+        .sidenav a { padding: 6px 8px 6px 16px; text-decoration: none; font-size: 25px; color: #818181; display: block; }
+        .sidenav a:hover { color: #f1f1f1; }
+        .sidenav a.active { background-color: #04AA6D; color: white; }
+        #mainFrame { width: 100%; height: 100%; border-radius: 15px; }
+        .topbar { position: fixed; top:0; left:200px; right:0; height: 50px; background:#111827; color:#e5e7eb; display:flex; align-items:center; justify-content:flex-end; padding:0 1rem; z-index:2; }
+        .main { top: 60px; }
+        .welcome { height: calc(100dvh - 80px); display:flex; justify-content:center; align-items:center; }
+        .logout-btn { color:#e5e7eb; text-decoration:none; border: 1px solid #374151; padding: 4px 10px; border-radius: 6px; font-size: 12px; }
+        .logout-btn:hover { background:#374151; }
+    </style>
+    <script>
+        $(document).ready(function () {
+            $(".sidenav a").click(function () {
+                if($(this).hasClass("active")) return;
+                var nav = $(this).attr("data-nav");
+                $(".sidenav a").removeClass("active");
+                $(this).addClass("active");
+                if(nav == "home"){
+                    $("#welcome").show();
+                    $("#mainFrame").attr("src", "about:blank");
+                    return;
+                }
+                $("#welcome").hide();
+                $("#mainFrame").attr("src", nav + ".php");
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <div class="sidenav">
+        <img src="logo.png" style="width:80%;margin:auto;display:block" />
+        <a class="active" data-nav="home">Home</a>
+        <a data-nav="dashboard">Dashboard</a>
+        <a data-nav="auth">Auth/ACL</a>
+        <a data-nav="webhooks">Webhooks</a>
+        <a data-nav="about">About</a>
+    </div>
+    <div class="topbar">
+        <span style="margin-right: 1rem; font-size:12px; opacity:0.8;">Signed in as <?php echo htmlspecialchars($_SESSION['username'] ?? 'admin'); ?></span>
+        <a class="logout-btn" href="logout.php">Logout</a>
+    </div>
+    <div class="main">
+        <div id='welcome' class="welcome">
+            <div style="height: 80%; width: 80%; border-radius: 15px; display: flex; justify-content: center; align-items: center; background-color: #0a0619;">
+                <img src="logo.png" style="width:300px;margin:auto;display:block;max-width: 100%;  border-radius: 15px; display:block" />
+            </div>
+        </div>
+        <iframe src="about:blank" id="mainFrame" frameborder="0"></iframe>
+    </div>
+</body>
+
+</html>

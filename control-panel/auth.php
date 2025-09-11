@@ -34,7 +34,7 @@ if (isset($_POST['action'])) {
         $password = $_POST['password'];
         $allow = $_POST['allow'];
         $sql = "INSERT INTO auth (username, password, allow) VALUES (:username, :password, :allow)";
-        dbExec($sql, [':username' => $username, ':password' => $password, ':allow' => $allow]);
+        dbExec($sql, [':username' => $username, ':password' => $password, ':allow' => $allow??'']);
     } else if ($_POST['action'] == 'add_acl') {
         $username = $_POST['username'];
         $topic = $_POST['topic'];
@@ -75,8 +75,8 @@ $acls = dbRows("SELECT * FROM acl");
         <?php foreach ($users as $user) { ?>
             <tr>
                 <td><?php echo $user['username']; ?></td>
-                <td><?php echo $user['password']; ?></td>
-                <td><?php echo $user['allow']; ?></td>
+                <td>********</td>
+                <td><?php echo trim($user['allow'])!=''?$user['allow']:'<empty>'; ?></td>
                 <td>
                     <form method="post">
                         <input type="hidden" name="action" value="delete_user">
