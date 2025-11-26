@@ -54,6 +54,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
         <img src="logo.png" style="width:80%;margin:auto;display:block" />
         <a class="active" data-nav="home">Home</a>
         <a data-nav="dashboard">Dashboard</a>
+        <a data-nav="connections">Connections</a>
         <a data-nav="auth">Auth/ACL</a>
         <a data-nav="webhooks">Webhooks</a>
         <a data-nav="about">About</a>

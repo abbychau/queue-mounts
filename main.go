@@ -8,11 +8,14 @@ import (
 	"os"
 	"os/signal"
 	"runtime/debug"
+	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
 	hooks "queuemounts/hooks"
 	aclHooks "queuemounts/hooks/acl"
+	connhooks "queuemounts/hooks/connlog"
 	httpHooks "queuemounts/hooks/http"
 
 	rv8 "github.com/go-redis/redis/v8"
@@ -111,8 +114,12 @@ func realMain(ctx context.Context) error {
 	ws := listeners.NewWebsocket("ws", cfg.Mqtt.WS, listenerConfig)
 	onError(server.AddListener(ws), "add websocket listener")
 
-	http := listeners.NewHTTPStats("stats", cfg.Mqtt.HTTP, nil, server.Info)
-	onError(server.AddListener(http), "add http listener")
+	// Add connection log hook
+	connLogHook := connhooks.NewConnLogHook(100000)
+	server.AddHook(connLogHook, nil)
+
+	httpStats := listeners.NewHTTPStats("stats", cfg.Mqtt.HTTP, nil, server.Info)
+	onError(server.AddListener(httpStats), "add http listener")
 
 	//server.AddHook(new(auth.AllowHook), nil)
 	server.AddHook(new(httpHooks.HttpWebHook), nil)
@@ -127,7 +134,42 @@ func realMain(ctx context.Context) error {
 			time.Sleep(10 * time.Second)
 		}
 	}()
+	// Start a small auxiliary HTTP server for custom APIs (conn logs)
+	go func() {
+		// derive port by +1 from cfg.Mqtt.HTTP if possible, else default to :18081
+		apiAddr := ":18081"
+		if strings.HasPrefix(cfg.Mqtt.HTTP, ":") {
+			p := strings.TrimPrefix(cfg.Mqtt.HTTP, ":")
+			if port, err := strconv.Atoi(p); err == nil {
+				apiAddr = fmt.Sprintf(":%d", port+1)
+			}
+		}
+		mux := http.NewServeMux()
+		mux.HandleFunc("/api/v1/mqtt/conn-logs", connLogHook.HTTPHandler())
+		mux.HandleFunc("/api/v1/mqtt/clients", connLogHook.HTTPClients())
+		log.Info("aux api server starting", "addr", apiAddr)
+		if err := http.ListenAndServe(apiAddr, mux); err != nil {
+			log.Error("aux api server stopped", "error", err)
+		}
+	}()
 
+	// Start a small auxiliary HTTP server for custom APIs (conn logs)
+	go func() {
+		// derive port by +1 from cfg.Mqtt.HTTP if possible, else default to :18081
+		apiAddr := ":18081"
+		if strings.HasPrefix(cfg.Mqtt.HTTP, ":") {
+			p := strings.TrimPrefix(cfg.Mqtt.HTTP, ":")
+			if port, err := strconv.Atoi(p); err == nil {
+				apiAddr = fmt.Sprintf(":%d", port+1)
+			}
+		}
+		mux := http.NewServeMux()
+		mux.HandleFunc("/api/v1/mqtt/conn-logs", connLogHook.HTTPHandler())
+		log.Info("aux api server starting", "addr", apiAddr)
+		if err := http.ListenAndServe(apiAddr, mux); err != nil {
+			log.Error("aux api server stopped", "error", err)
+		}
+	}()
 	errCh := make(chan error, 1)
 	// start server
 	go func() {
