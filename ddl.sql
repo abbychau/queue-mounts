@@ -11,5 +11,5 @@ CREATE TABLE IF NOT EXISTS `acl` (
 CREATE TABLE IF NOT EXISTS `auth` (
   `username` char(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `password` char(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `allow` int DEFAULT NULL
+  `allow` int NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

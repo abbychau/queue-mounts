@@ -53,6 +53,8 @@ The `auth-mysql.yml` file configures:
 - MySQL connection details
 - MQTT broker settings
 
+Note: ACL `access` values follow comqtt semantics: `1`=subscribe/read, `2`=publish/write, `3`=read+write, `0`=deny.
+
 ## Architecture
 
 - `main.go` - MQTT broker implementation

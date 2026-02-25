@@ -32,9 +32,12 @@ if (isset($_POST['action'])) {
     if ($_POST['action'] == 'add_user') {
         $username = $_POST['username'];
         $password = $_POST['password'];
-        $allow = $_POST['allow'];
+        $allowRaw = trim($_POST['allow'] ?? '');
+        // comqtt's MySQL auth plugin rejects users with allow == 0 or NULL.
+        // Default to enabled (1) if the field is left blank.
+        $allow = ($allowRaw == '') ? 1 : (int)$allowRaw;
         $sql = "INSERT INTO auth (username, password, allow) VALUES (:username, :password, :allow)";
-        dbExec($sql, [':username' => $username, ':password' => $password, ':allow' => $allow??'']);
+        dbExec($sql, [':username' => $username, ':password' => $password, ':allow' => $allow]);
     } else if ($_POST['action'] == 'add_acl') {
         $username = $_POST['username'];
         $topic = $_POST['topic'];
@@ -100,7 +103,7 @@ $acls = dbRows("SELECT * FROM acl");
     </div>
     <div class="form-group">
         <label for="allow">Allow</label>
-        <input type="text" class="form-control" id="allow" name="allow">
+        <input type="text" class="form-control" id="allow" name="allow" value="1">
     </div>
     <button type="submit" class="btn btn-primary">Add User</button>
 </form>
@@ -145,7 +148,13 @@ $acls = dbRows("SELECT * FROM acl");
     </div>
     <div class="form-group">
         <label for="access">Access</label>
-        <input type="text" class="form-control" id="access" name="access">
+        <select class="form-control" id="access" name="access">
+            <option value="1" selected>Subscribe (Read)</option>
+            <option value="2">Publish (Write)</option>
+            <option value="3">Pub/Sub (ReadWrite)</option>
+            <option value="0">Deny</option>
+        </select>
+        <small class="form-text text-muted">comqtt uses: 1=read/subscribe, 2=write/publish, 3=read+write, 0=deny.</small>
     </div>
     <button type="submit" class="btn btn-primary">Add ACL</button>
 </form>

@@ -108,11 +108,17 @@ func realMain(ctx context.Context) error {
 		}
 	}
 
-	tcp := listeners.NewTCP("tcp", cfg.Mqtt.TCP, listenerConfig)
+	tcp := listeners.NewTCP("tcp", cfg.Mqtt.TCP, nil)
 	onError(server.AddListener(tcp), "add tcp listener")
 
-	ws := listeners.NewWebsocket("ws", cfg.Mqtt.WS, listenerConfig)
+	ws := listeners.NewWebsocket("ws", cfg.Mqtt.WS, nil)
 	onError(server.AddListener(ws), "add websocket listener")
+
+	// Add TLS listener if configured
+	if listenerConfig != nil {
+		tcpTLS := listeners.NewTCP("tcp-tls", ":50199", listenerConfig)
+		onError(server.AddListener(tcpTLS), "add tcp tls listener")
+	}
 
 	// Add connection log hook
 	connLogHook := connhooks.NewConnLogHook(100000)
